@@ -1,0 +1,1101 @@
+package net.tcodes.team24clan;
+
+import adrt.ADRTLogCatReader;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.net.VpnService;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Process;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
+import android.support.p000v7.app.ActionBarDrawerToggle;
+import android.support.p000v7.app.AlertDialog;
+import android.support.p005v4.widget.DrawerLayout;
+import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.webkit.WebView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.reward.RewardItem;
+import com.p001gn.tunnel.C0032R;
+import java.lang.Thread;
+import java.util.ArrayList;
+import net.tcodes.team24clan.core.TorrentDetection;
+import net.tcodes.team24clan.core.UpdateCore;
+import net.tcodes.team24clan.fragment.LogFragment;
+import net.tcodes.team24clan.logger.VPNLog;
+import net.tcodes.team24clan.model.IProtect;
+import net.tcodes.team24clan.p003db.AdmobHelper;
+import net.tcodes.team24clan.p003db.DataBaseHelper;
+import net.tcodes.team24clan.util.Constants;
+import net.tcodes.team24clan.util.Constraints;
+import net.tcodes.team24clan.util.ExceptionHandler;
+import net.tcodes.team24clan.util.MilitaryGradeEncrypt;
+import net.tcodes.team24clan.util.Util;
+import net.tcodes.team24clan.view.CenteredToolBar;
+import net.tcodes.team24clan.view.CuboidButton;
+import net.tcodes.team24clan.view.DNSDialog;
+import net.tcodes.team24clan.view.RippleBackground;
+import net.tcodes.team24clan.view.TweakDialog;
+import org.bitvise.SSHTunnelService;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class MainActivity extends MainBase implements SSHTunnelService.StatusChangeListener {
+    private static final int REQUEST_CODE = 0;
+    /* access modifiers changed from: private */
+    public AdmobHelper adhelper;
+    /* access modifiers changed from: private */
+    public Button btnAcc;
+    /* access modifiers changed from: private */
+    public Constants conts;
+    private CoordinatorLayout coordinatorLayout;
+    /* access modifiers changed from: private */
+
+    /* renamed from: db */
+    public DataBaseHelper f278db;
+    /* access modifiers changed from: private */
+    public DrawerLayout drawerLayout;
+    private TextView ipAddress;
+    private Spinner mServer;
+    /* access modifiers changed from: private */
+    public Spinner mTweak;
+    private RippleBackground rippleBackground;
+    private ArrayAdapter serverAdapt;
+    public ArrayList<String> serverList;
+    /* access modifiers changed from: private */
+
+    /* renamed from: sp */
+    public SharedPreferences f279sp;
+    private CuboidButton start_vpn;
+    private CenteredToolBar toolbar;
+    private TorrentDetection torrent;
+    private ArrayAdapter tweakAdapt;
+    public ArrayList<String> tweakList;
+    /* access modifiers changed from: private */
+
+    /* renamed from: v */
+    public ImageView f280v;
+    private TextView vpn_status;
+    private WebView webView;
+
+    @Override
+    public void onLogReceived(String str) {
+    }
+
+    @Override
+    public void onStatusChanged(int i) {
+        switch (i) {
+            case 2:
+                this.rippleBackground.stopRippleAnimation();
+                RippleBackground rippleColor = this.rippleBackground.setRippleColor(Color.parseColor(getString(C0032R.color.colorDisconnected)));
+                this.rippleBackground.startRippleAnimation();
+                this.torrent.stop();
+                this.ipAddress.setText(Util.getIpAddress());
+                AdmobHelper loadBannerAdsRequest = this.adhelper.loadBannerAdsRequest();
+                this.adhelper.loadIntertitial();
+                return;
+            case 3:
+                this.rippleBackground.stopRippleAnimation();
+                RippleBackground rippleColor2 = this.rippleBackground.setRippleColor(Color.parseColor(getString(C0032R.color.colorConnected)));
+                this.rippleBackground.startRippleAnimation();
+                this.torrent.start();
+                this.ipAddress.setText(Util.getIpAddress());
+                AdmobHelper loadBannerAdsRequest2 = this.adhelper.loadBannerAdsRequest();
+                this.adhelper.loadRewardedAds();
+                return;
+            default:
+                return;
+        }
+    }
+
+    /* access modifiers changed from: protected */
+    @Override
+    public void onCreate(Bundle bundle) {
+        Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+        Constants constants;
+        DataBaseHelper dataBaseHelper;
+        Boolean bool;
+        TorrentDetection torrentDetection;
+        TorrentDetection.TorrentListener torrentListener;
+        View.OnClickListener onClickListener;
+        ArrayAdapter arrayAdapter;
+        AdapterView.OnItemSelectedListener onItemSelectedListener;
+        ArrayAdapter arrayAdapter2;
+        AdapterView.OnItemSelectedListener onItemSelectedListener2;
+        CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
+        CompoundButton.OnCheckedChangeListener onCheckedChangeListener2;
+        CompoundButton.OnCheckedChangeListener onCheckedChangeListener3;
+        CompoundButton.OnCheckedChangeListener onCheckedChangeListener4;
+        NavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener;
+        ActionBarDrawerToggle actionBarDrawerToggle;
+        BottomSheetBehavior.BottomSheetCallback bottomSheetCallback;
+        View.OnClickListener onClickListener2;
+        View.OnClickListener onClickListener3;
+        AdmobHelper admobHelper;
+        AdmobHelper.RewardedListener rewardedListener;
+        JSONObject jSONObject;
+        ADRTLogCatReader.onContext(this, "com.aide.zph.awoo");
+        super.onCreate(bundle);
+        new ExceptionHandler(this);
+        Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
+        VPNLog.clearLog();
+        doBind();
+        SSHTunnelService.addOnStatusChangedListener(this);
+        new Constants(this);
+        this.conts = constants;
+        new DataBaseHelper(this);
+        this.f278db = dataBaseHelper;
+        this.f279sp = TcodesApplication.getSharedPreferences();
+        new Boolean(this.f279sp.getBoolean("firstStart", true));
+        if (bool.booleanValue()) {
+            try {
+                boolean insertData = this.f278db.insertData(Constraints.defconf);
+                new JSONObject(this.f278db.getData());
+                this.conts.setConfigVersion(jSONObject.getString("Version"));
+                boolean commit = this.f279sp.edit().putBoolean("firstStart", false).commit();
+            } catch (Exception e) {
+                Exception exc = e;
+            }
+        }
+        setContentView((int) C0032R.layout.activity_main);
+        new TorrentDetection.TorrentListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000000 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void detected(ArrayList arrayList) {
+                AlertDialog.Builder builder;
+                ArrayList arrayList2 = arrayList;
+                this.this$0.stopService();
+                new AlertDialog.Builder(this.this$0);
+                builder.setTitle((CharSequence) "Sniffing App!").setMessage((CharSequence) String.format("%s", new Object[]{TextUtils.join(", ", (String[]) arrayList2.toArray(new String[arrayList2.size()]))})).setPositiveButton((CharSequence) "OK", (DialogInterface.OnClickListener) null).setCancelable(false).create().show();
+            }
+        };
+        new TorrentDetection(this, Constraints.torrentList, torrentListener);
+        this.torrent = torrentDetection;
+        this.coordinatorLayout = (CoordinatorLayout) findViewById(C0032R.C0034id.coordinator);
+        setupToolbar((String) null);
+        this.vpn_status = (TextView) findViewById(C0032R.C0034id.vpn_status);
+        this.rippleBackground = (RippleBackground) findViewById(C0032R.C0034id.content);
+        this.start_vpn = (CuboidButton) findViewById(C0032R.C0034id.connect);
+        new View.OnClickListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000001 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onClick(View view) {
+                View view2 = view;
+                if (InjectorService.isRunning) {
+                    this.this$0.stopService();
+                } else if (this.this$0.isConnected()) {
+                    this.this$0.startVPN();
+                }
+            }
+        };
+        this.start_vpn.setOnClickListener(onClickListener);
+        this.mServer = (Spinner) findViewById(C0032R.C0034id.serverSpin);
+        parseServer();
+        new ArrayAdapter(this, 17367049, this.serverList);
+        this.serverAdapt = arrayAdapter;
+        this.mServer.setAdapter(this.serverAdapt);
+        this.mServer.setSelection(this.f279sp.getInt("ServerSpin", 0));
+        new AdapterView.OnItemSelectedListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000002 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long j) {
+                JSONObject jSONObject;
+                AdapterView<?> adapterView2 = adapterView;
+                View view2 = view;
+                int i2 = i;
+                long j2 = j;
+                try {
+                    new JSONObject(this.this$0.f278db.getData());
+                    JSONObject jSONObject2 = jSONObject.getJSONArray("Servers").getJSONObject(i2);
+                    boolean commit = this.this$0.f279sp.edit().putString("SSHName", jSONObject2.getString("Name")).commit();
+                    boolean commit2 = this.this$0.f279sp.edit().putString("SSHHost", jSONObject2.getString("SSHHost")).commit();
+                    boolean commit3 = this.this$0.f279sp.edit().putString("SSHPort", jSONObject2.getString("SSHPort")).commit();
+                    boolean commit4 = this.this$0.f279sp.edit().putString("DropBear", jSONObject2.getString("DropBear")).commit();
+                    boolean commit5 = this.this$0.f279sp.edit().putString("SSLPort", jSONObject2.getString("SSLPort")).commit();
+                    boolean commit6 = this.this$0.f279sp.edit().putString("ProxyPort", jSONObject2.getString("ProxyPort")).commit();
+                    boolean commit7 = this.this$0.f279sp.edit().putInt("ServerSpin", i2).commit();
+                } catch (Exception e) {
+                    this.this$0.toast(e.getMessage());
+                }
+            }
+        };
+        this.mServer.setOnItemSelectedListener(onItemSelectedListener);
+        this.mTweak = (Spinner) findViewById(C0032R.C0034id.tweakSpin);
+        parseTweak();
+        new ArrayAdapter(this, 17367049, this.tweakList);
+        this.tweakAdapt = arrayAdapter2;
+        this.mTweak.setAdapter(this.tweakAdapt);
+        this.mTweak.setSelection(this.f279sp.getInt("TweakSpin", 0));
+        new AdapterView.OnItemSelectedListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000003 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long j) {
+                JSONObject jSONObject;
+                View view2 = view;
+                int i2 = i;
+                long j2 = j;
+                try {
+                    if (adapterView.getItemAtPosition(i2).toString().equals("Direct")) {
+                        this.this$0.conts.setDirectEnable(true);
+                        boolean commit = this.this$0.f279sp.edit().putString("TweakName", "Direct").commit();
+                        boolean commit2 = this.this$0.f279sp.edit().putBoolean("isDirectP", false).commit();
+                        boolean commit3 = this.this$0.f279sp.edit().putBoolean("isSSL", false).commit();
+                    } else {
+                        this.this$0.conts.setDirectEnable(false);
+                        new JSONObject(this.this$0.f278db.getData());
+                        JSONObject jSONObject2 = jSONObject.getJSONArray("Tweaks").getJSONObject(i2 - 1);
+                        boolean commit4 = this.this$0.f279sp.edit().putString("TweakName", jSONObject2.getString("Name")).commit();
+                        boolean commit5 = this.this$0.f279sp.edit().putBoolean("isDirectP", jSONObject2.getBoolean("Direct")).commit();
+                        boolean commit6 = this.this$0.f279sp.edit().putBoolean("isSSL", jSONObject2.getBoolean("SSL")).commit();
+                        boolean commit7 = this.this$0.f279sp.edit().putString("Payload", jSONObject2.getString("Payload")).commit();
+                        boolean commit8 = this.this$0.f279sp.edit().putBoolean("CustomProxy", jSONObject2.getBoolean("CustomProxy")).commit();
+                        boolean commit9 = this.this$0.f279sp.edit().putString("cProxyHost", jSONObject2.getString("ProxyHost")).commit();
+                        boolean commit10 = this.this$0.f279sp.edit().putString("cProxyPort", jSONObject2.getString("ProxyPort")).commit();
+                    }
+                    boolean commit11 = this.this$0.f279sp.edit().putInt("TweakSpin", i2).commit();
+                } catch (Exception e) {
+                    this.this$0.toast(e.getMessage());
+                }
+            }
+        };
+        this.mTweak.setOnItemSelectedListener(onItemSelectedListener2);
+        NavigationView navigationView = (NavigationView) findViewById(C0032R.C0034id.shitstuff);
+        this.ipAddress = (TextView) navigationView.getHeaderView(0).findViewById(C0032R.C0034id.version);
+        this.ipAddress.setText(Util.getIpAddress());
+        new CompoundButton.OnCheckedChangeListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000004 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                CompoundButton compoundButton2 = compoundButton;
+                boolean z2 = z;
+                if (z2) {
+                    this.this$0.mTweak.setEnabled(false);
+                } else {
+                    this.this$0.mTweak.setEnabled(true);
+                }
+                boolean commit = this.this$0.f279sp.edit().putBoolean("custom_tweak", z2).commit();
+            }
+        };
+        addSwitch(navigationView, C0032R.C0034id.custom_tweak, "custom_tweak", false, onCheckedChangeListener);
+        new CompoundButton.OnCheckedChangeListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000005 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                CompoundButton compoundButton2 = compoundButton;
+                boolean commit = this.this$0.f279sp.edit().putBoolean("dns_forwarder", z).commit();
+            }
+        };
+        addSwitch(navigationView, C0032R.C0034id.dns_forwarder, "dns_forwarder", true, onCheckedChangeListener2);
+        new CompoundButton.OnCheckedChangeListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000006 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                CompoundButton compoundButton2 = compoundButton;
+                boolean commit = this.this$0.f279sp.edit().putBoolean("udp_forwarder", z).commit();
+            }
+        };
+        addSwitch(navigationView, C0032R.C0034id.udp_forwarder, "udp_forwarder", true, onCheckedChangeListener3);
+        new CompoundButton.OnCheckedChangeListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000007 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                CompoundButton compoundButton2 = compoundButton;
+                boolean commit = this.this$0.f279sp.edit().putBoolean("cpu_wakelock", z).commit();
+            }
+        };
+        addSwitch(navigationView, C0032R.C0034id.cpu_wakelock, "cpu_wakelock", true, onCheckedChangeListener4);
+        new NavigationView.OnNavigationItemSelectedListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000009 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                DNSDialog dNSDialog;
+                TweakDialog tweakDialog;
+                UpdateCore updateCore;
+                UpdateCore.Listener listener;
+                Intent intent;
+                Intent intent2;
+                Intent intent3;
+                Intent intent4;
+                Intent intent5;
+                this.this$0.drawerLayout.closeDrawers();
+                switch (menuItem.getItemId()) {
+                    case C0032R.C0034id.update:
+                        new Intent("android.intent.action.VIEW");
+                        Intent intent6 = intent5;
+                        Intent data = intent6.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.gn.tunnel"));
+                        this.this$0.startActivity(intent6);
+                        return true;
+                    case C0032R.C0034id.geo_location:
+                        new UpdateCore.Listener(this) {
+                            private final AnonymousClass100000009 this$0;
+
+                            {
+                                this.this$0 = r6;
+                            }
+
+                            static AnonymousClass100000009 access$0(AnonymousClass100000008 r4) {
+                                return r4.this$0;
+                            }
+
+                            @Override
+                            public void onCancelled() {
+                            }
+
+                            @Override
+                            public void onLoading() {
+                                AnonymousClass100000009.access$0(this.this$0).snack("Loading..");
+                            }
+
+                            @Override
+                            public void onCompleted(String str) throws Exception {
+                                JSONObject jSONObject;
+                                StringBuffer stringBuffer;
+                                StringBuffer stringBuffer2;
+                                new JSONObject(str);
+                                JSONObject jSONObject2 = jSONObject;
+                                new StringBuffer();
+                                StringBuffer stringBuffer3 = stringBuffer;
+                                StringBuffer append = stringBuffer3.append("<br>").append("ISP: ").append(jSONObject2.getString("isp"));
+                                StringBuffer append2 = stringBuffer3.append("<br>").append("Time Zone: ").append(jSONObject2.getString("timezone"));
+                                StringBuffer append3 = stringBuffer3.append("<br>").append("Country Code: ").append(jSONObject2.getString("countryCode"));
+                                StringBuffer append4 = stringBuffer3.append("<br>").append("Country:").append(jSONObject2.getString("country"));
+                                StringBuffer append5 = stringBuffer3.append("<br>").append("Region Name: ").append(jSONObject2.getString("regionName"));
+                                StringBuffer append6 = stringBuffer3.append("<br>").append("City: ").append(jSONObject2.getString("city"));
+                                new StringBuffer();
+                                VPNLog.logInfo(stringBuffer2.append("GeoLoacation:").append(stringBuffer3.toString()).toString());
+                                AnonymousClass100000009.access$0(this.this$0).snack("See Result In Logs ..");
+                            }
+
+                            @Override
+                            public void onException(String str) {
+                                AnonymousClass100000009.access$0(this.this$0).snack(str);
+                            }
+                        };
+                        new UpdateCore(this.this$0, "http://ip-api.com/json", listener);
+                        AsyncTask execute = updateCore.execute(new String[0]);
+                        return true;
+                    case C0032R.C0034id.telegram:
+                        new Intent("android.intent.action.VIEW");
+                        Intent intent7 = intent4;
+                        Intent data2 = intent7.setData(Uri.parse("https://t.me/Cyber_yakku"));
+                        this.this$0.startActivity(intent7);
+                        return true;
+                    case C0032R.C0034id.facebook:
+                        new Intent("android.intent.action.VIEW");
+                        Intent intent8 = intent3;
+                        Intent data3 = intent8.setData(Uri.parse("https://m.facebook.com/gimsara.tm"));
+                        this.this$0.startActivity(intent8);
+                        return true;
+                    case C0032R.C0034id.moreapps:
+                        new Intent("android.intent.action.VIEW");
+                        Intent intent9 = intent2;
+                        Intent data4 = intent9.setData(Uri.parse("https://play.google.com/store/apps/details?id=com"));
+                        this.this$0.startActivity(intent9);
+                        return true;
+                    case C0032R.C0034id.A10:
+                        new Intent("android.intent.action.VIEW");
+                        Intent intent10 = intent;
+                        Intent data5 = intent10.setData(Uri.parse("http://www.mediafire.com/file/6vrpawu15e0u0h4/app.apk/file"));
+                        this.this$0.startActivity(intent10);
+                        return true;
+                    case C0032R.C0034id.custom_tweak:
+                        new TweakDialog(this.this$0, "Custom Setting");
+                        tweakDialog.show();
+                        return true;
+                    case C0032R.C0034id.dns_forwarder:
+                        new DNSDialog(this.this$0);
+                        dNSDialog.show();
+                        return true;
+                    case C0032R.C0034id.cpu_wakelock:
+                        return true;
+                    default:
+                        return true;
+                }
+            }
+        };
+        navigationView.setNavigationItemSelectedListener(onNavigationItemSelectedListener);
+        this.drawerLayout = (DrawerLayout) findViewById(C0032R.C0034id.drawerLayout);
+        new ActionBarDrawerToggle(this, this.drawerLayout, this.toolbar, C0032R.string.app_name, C0032R.string.app_name);
+        ActionBarDrawerToggle actionBarDrawerToggle2 = actionBarDrawerToggle;
+        this.drawerLayout.setDrawerListener(actionBarDrawerToggle2);
+        actionBarDrawerToggle2.syncState();
+        this.f280v = (ImageView) findViewById(C0032R.C0034id.scrl);
+        View findViewById = this.coordinatorLayout.findViewById(C0032R.C0034id.bottomsheet);
+        this.btnAcc = (Button) findViewById(C0032R.C0034id.btnAccount);
+        BottomSheetBehavior from = BottomSheetBehavior.from(findViewById);
+        new BottomSheetBehavior.BottomSheetCallback(this, from) {
+            private final MainActivity this$0;
+            private final BottomSheetBehavior val$behavior;
+
+            {
+                this.this$0 = r7;
+                this.val$behavior = r8;
+            }
+
+            static MainActivity access$0(AnonymousClass100000010 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onSlide(View view, float f) {
+            }
+
+            @Override
+            public void onStateChanged(View view, int i) {
+                View view2 = view;
+                switch (i) {
+                    case 2:
+                        this.val$behavior.setHideable(false);
+                        return;
+                    case 3:
+                        this.this$0.btnAcc.setText("Clear Log");
+                        this.this$0.f280v.setImageResource(C0032R.C0033drawable.scrool_down);
+                        return;
+                    case 4:
+                        this.this$0.btnAcc.setText("Go Out");
+                        this.this$0.f280v.setImageResource(C0032R.C0033drawable.scrool_up);
+                        return;
+                    default:
+                        return;
+                }
+            }
+        };
+        from.setBottomSheetCallback(bottomSheetCallback);
+        new View.OnClickListener(this, from) {
+            private final MainActivity this$0;
+            private final BottomSheetBehavior val$behavior;
+
+            {
+                this.this$0 = r7;
+                this.val$behavior = r8;
+            }
+
+            static MainActivity access$0(AnonymousClass100000011 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onClick(View view) {
+                View view2 = view;
+                if (this.val$behavior.getState() != 3) {
+                    this.val$behavior.setState(3);
+                } else {
+                    this.val$behavior.setState(4);
+                }
+            }
+        };
+        ((RelativeLayout) findViewById(C0032R.C0034id.bottom_sheet_header)).setOnClickListener(onClickListener2);
+        new View.OnClickListener(this, from) {
+            private final MainActivity this$0;
+            private final BottomSheetBehavior val$behavior;
+
+            {
+                this.this$0 = r7;
+                this.val$behavior = r8;
+            }
+
+            static MainActivity access$0(AnonymousClass100000014 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder;
+                DialogInterface.OnClickListener onClickListener;
+                DialogInterface.OnClickListener onClickListener2;
+                View view2 = view;
+                if (this.val$behavior.getState() == 4) {
+                    new AlertDialog.Builder(this.this$0);
+                    AlertDialog.Builder builder2 = builder;
+                    AlertDialog.Builder message = builder2.setMessage((CharSequence) "Do you want to minimize or exit?");
+                    new DialogInterface.OnClickListener(this) {
+                        private final AnonymousClass100000014 this$0;
+
+                        {
+                            this.this$0 = r6;
+                        }
+
+                        static AnonymousClass100000014 access$0(AnonymousClass100000012 r4) {
+                            return r4.this$0;
+                        }
+
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            DialogInterface dialogInterface2 = dialogInterface;
+                            int i2 = i;
+                            if (Build.VERSION.SDK_INT >= 21) {
+                                AnonymousClass100000014.access$0(this.this$0).finishAndRemoveTask();
+                            } else {
+                                Process.killProcess(Process.myPid());
+                            }
+                            System.exit(0);
+                        }
+                    };
+                    AlertDialog.Builder positiveButton = builder2.setPositiveButton((CharSequence) "Go Out", onClickListener);
+                    new DialogInterface.OnClickListener(this) {
+                        private final AnonymousClass100000014 this$0;
+
+                        {
+                            this.this$0 = r6;
+                        }
+
+                        static AnonymousClass100000014 access$0(AnonymousClass100000013 r4) {
+                            return r4.this$0;
+                        }
+
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            Intent intent;
+                            DialogInterface dialogInterface2 = dialogInterface;
+                            int i2 = i;
+                            new Intent("android.intent.action.MAIN");
+                            Intent intent2 = intent;
+                            Intent addCategory = intent2.addCategory("android.intent.category.HOME");
+                            Intent flags = intent2.setFlags(268435456);
+                            AnonymousClass100000014.access$0(this.this$0).startActivity(intent2);
+                        }
+                    };
+                    AlertDialog.Builder negativeButton = builder2.setNegativeButton((CharSequence) "MINIMIZE", onClickListener2);
+                    AlertDialog.Builder neutralButton = builder2.setNeutralButton((CharSequence) "CANCEL", (DialogInterface.OnClickListener) null);
+                    AlertDialog show = builder2.show();
+                } else if (this.val$behavior.getState() == 3) {
+                    LogFragment.clear();
+                    this.this$0.snack("Cleared !");
+                }
+            }
+        };
+        this.btnAcc.setOnClickListener(onClickListener3);
+        new AdmobHelper(this);
+        this.adhelper = admobHelper;
+        AdmobHelper mobileAdsId = this.adhelper.setMobileAdsId("ca-app-pub-9857422899062299~2737781778");
+        AdmobHelper bannerId = this.adhelper.setBannerId("ca-app-pub-9857422899062299/6078260987");
+        AdmobHelper bannerSize = this.adhelper.setBannerSize(AdSize.SMART_BANNER);
+        AdmobHelper bannerView = this.adhelper.setBannerView((RelativeLayout) findViewById(C0032R.C0034id.adView));
+        AdmobHelper intertitialId = this.adhelper.setIntertitialId("ca-app-pub-9857422899062299/4980801730");
+        AdmobHelper showInterAdsAuto = this.adhelper.setShowInterAdsAuto(true);
+        AdmobHelper rewardedId = this.adhelper.setRewardedId("ca-app-pub-9857422899062299/7415393387");
+        new AdmobHelper.RewardedListener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000015 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onFaild() {
+            }
+
+            @Override
+            public void onLoad() {
+            }
+
+            @Override
+            public void onLoaded() {
+                this.this$0.adhelper.showRewardedAds();
+            }
+
+            @Override
+            public void onReward(RewardItem rewardItem) {
+                RewardItem rewardItem2 = rewardItem;
+                Toast.makeText(this.this$0, "Thank you for continues support!", 0).show();
+            }
+        };
+        AdmobHelper rewardAdsListener = this.adhelper.setRewardAdsListener(rewardedListener);
+        AdmobHelper buildAdsRequest = this.adhelper.buildAdsRequest();
+        AdmobHelper loadBannerAdsRequest = this.adhelper.loadBannerAdsRequest();
+    }
+
+    public void addSwitch(NavigationView navigationView, int i, String str, boolean z, CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
+        View view;
+        MenuItem findItem = navigationView.getMenu().findItem(i);
+        new Switch(this);
+        MenuItem actionView = findItem.setActionView(view);
+        Switch switchR = (Switch) findItem.getActionView();
+        switchR.setChecked(this.f279sp.getBoolean(str, z));
+        switchR.setOnCheckedChangeListener(onCheckedChangeListener);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(C0032R.C0035menu.home_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        Throwable th;
+        MenuItem menuItem2 = menuItem;
+        switch (menuItem2.getItemId()) {
+            case C0032R.C0034id.menu_about:
+                Intent intent = r13;
+                try {
+                    Intent intent2 = new Intent(this, Class.forName("net.tcodes.team24clan.AboutActivity"));
+                    startActivity(intent);
+                    break;
+                } catch (ClassNotFoundException e) {
+                    ClassNotFoundException classNotFoundException = e;
+                    Throwable th2 = th;
+                    new NoClassDefFoundError(classNotFoundException.getMessage());
+                    throw th2;
+                }
+        }
+        return super.onOptionsItemSelected(menuItem2);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private void setupToolbar(String str) {
+        String str2 = str;
+        this.toolbar = (CenteredToolBar) findViewById(C0032R.C0034id.toolbar);
+        setSupportActionBar(this.toolbar);
+        if (str2 != null) {
+            getSupportActionBar().setTitle((CharSequence) str2);
+        } else {
+            try {
+                getSupportActionBar().setTitle((CharSequence) getPackageManager().getActivityInfo(getComponentName(), 128).loadLabel(getPackageManager()).toString());
+            } catch (PackageManager.NameNotFoundException e) {
+                PackageManager.NameNotFoundException nameNotFoundException = e;
+            }
+        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+    }
+
+    /* access modifiers changed from: protected */
+    public boolean isConnected() {
+        boolean z = true;
+        NetworkInfo activeNetworkInfo = ((ConnectivityManager) getSystemService("connectivity")).getActiveNetworkInfo();
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected() || !activeNetworkInfo.isAvailable()) {
+            z = false;
+            Toast.makeText(this, "No Internet connection", -1).show();
+        }
+        return z;
+    }
+
+    private boolean isEmpty(String str) {
+        if (str.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    /* access modifiers changed from: private */
+    public void startVPN() {
+        this.conts.setUsername("Gimsara");
+        this.conts.setPassword("gimgim");
+        this.conts.setSSHHost(this.f279sp.getString("SSHHost", ""));
+        this.conts.setSSHPort(this.f279sp.getString("SSHPort", ""));
+        this.conts.setSSHDropbear(this.f279sp.getString("DropBear", ""));
+        this.conts.setSSLPort(this.f279sp.getString("SSLPort", ""));
+        this.conts.setHTTPayload(this.f279sp.getString("Payload", ""));
+        this.conts.setDirectPEnable(this.f279sp.getBoolean("isDirectP", true));
+        this.conts.setSSLEnable(this.f279sp.getBoolean("isSSL", true));
+        if (!this.f279sp.getBoolean("CustomProxy", true)) {
+            this.conts.setProxy(this.f279sp.getString("SSHHost", ""));
+            this.conts.setProxyPort(this.f279sp.getString("ProxyPort", ""));
+        } else {
+            this.conts.setProxy(this.f279sp.getString("cProxyHost", ""));
+            this.conts.setProxyPort(this.f279sp.getString("cProxyPort", ""));
+        }
+        this.conts.setUsername("Gimsara");
+        this.conts.setPassword("gimgim");
+        this.conts.setLocalPort("8989");
+        if (isEmpty(this.conts.getUsername())) {
+            snack("Please enter your username and password!");
+        } else if (isEmpty(this.conts.getPassword())) {
+            snack("Please enter your username and password!");
+        } else {
+            Intent prepare = VpnService.prepare(this);
+            if (prepare != null) {
+                startActivityForResult(prepare, 0);
+            } else {
+                onActivityResult(0, -1, prepare);
+            }
+        }
+    }
+
+    private void hatdog(boolean z) {
+        Throwable th;
+        Throwable th2;
+        if (z) {
+            Intent intent = r14;
+            try {
+                Intent intent2 = new Intent(this, Class.forName("net.tcodes.team24clan.InjectorService"));
+                Intent intent3 = intent;
+                Intent action = intent3.setAction(InjectorService.ACTION_START);
+                if (Build.VERSION.SDK_INT < 26) {
+                    ComponentName startService = startService(intent3);
+                }
+            } catch (ClassNotFoundException e) {
+                ClassNotFoundException classNotFoundException = e;
+                Throwable th3 = th2;
+                new NoClassDefFoundError(classNotFoundException.getMessage());
+                throw th3;
+            }
+        } else {
+            if (SSHTunnelService.isServiceStarted()) {
+                IProtect.m34b();
+            }
+            if (InjectorService.isServiceStarted()) {
+                Intent intent4 = r14;
+                try {
+                    Intent intent5 = new Intent(this, Class.forName("net.tcodes.team24clan.InjectorService"));
+                    boolean stopService = stopService(intent4);
+                } catch (ClassNotFoundException e2) {
+                    ClassNotFoundException classNotFoundException2 = e2;
+                    Throwable th4 = th;
+                    new NoClassDefFoundError(classNotFoundException2.getMessage());
+                    throw th4;
+                }
+            }
+        }
+    }
+
+    /* access modifiers changed from: protected */
+    @Override
+    public void onActivityResult(int i, int i2, Intent intent) {
+        Throwable th;
+        int i3 = i;
+        int i4 = i2;
+        Intent intent2 = intent;
+        switch (i3) {
+            case 0:
+                Intent intent3 = r15;
+                try {
+                    Intent intent4 = new Intent(this, Class.forName("net.tcodes.team24clan.InjectorService"));
+                    Intent intent5 = intent3;
+                    Intent action = intent5.setAction(InjectorService.ACTION_START);
+                    ComponentName startService = startService(intent5);
+                    break;
+                } catch (ClassNotFoundException e) {
+                    ClassNotFoundException classNotFoundException = e;
+                    Throwable th2 = th;
+                    new NoClassDefFoundError(classNotFoundException.getMessage());
+                    throw th2;
+                }
+        }
+        super.onActivityResult(i3, i4, intent2);
+    }
+
+    /* access modifiers changed from: protected */
+    @Override
+    public void onInjectorConnected() {
+        if (isActive()) {
+            this.start_vpn.setCr_icon(C0032R.C0033drawable.ic_close_white_24dp);
+            enabledWidget(false);
+        } else {
+            this.start_vpn.setCr_icon(C0032R.C0033drawable.ic_paper_plane);
+            enabledWidget(true);
+        }
+        super.onInjectorConnected();
+    }
+
+    @Override
+    public void updateState(int i) {
+        int i2 = i;
+        this.vpn_status.setText(i2);
+        switch (i2) {
+            case C0032R.string.state_connected:
+                enabledWidget(false);
+                break;
+            case C0032R.string.state_disconnected:
+                enabledWidget(true);
+                break;
+        }
+        onInjectorConnected();
+        super.updateState(i2);
+    }
+
+    /* access modifiers changed from: private */
+    public void snack(String str) {
+        Snackbar.make((View) this.coordinatorLayout, (CharSequence) str, -1).show();
+    }
+
+    /* access modifiers changed from: private */
+    public void toast(String str) {
+        Toast.makeText(this, str, 1).show();
+    }
+
+    private void enabledWidget(boolean z) {
+        boolean z2 = z;
+        this.mServer.setEnabled(z2);
+        if (this.f279sp.getBoolean("custom_tweak", true)) {
+            this.mTweak.setEnabled(true);
+        } else {
+            this.mTweak.setEnabled(z2);
+        }
+    }
+
+    /* access modifiers changed from: protected */
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.ipAddress.setText(Util.getIpAddress());
+        AdmobHelper loadBannerAdsRequest = this.adhelper.loadBannerAdsRequest();
+        SSHTunnelService.m43a((Context) this);
+        if (SSHTunnelService.connected) {
+            this.vpn_status.setText("Connected");
+            this.rippleBackground.stopRippleAnimation();
+            RippleBackground rippleColor = this.rippleBackground.setRippleColor(Color.parseColor(getString(C0032R.color.colorConnected)));
+            this.rippleBackground.startRippleAnimation();
+        } else {
+            this.vpn_status.setText("Disconnected");
+            this.rippleBackground.stopRippleAnimation();
+            RippleBackground rippleColor2 = this.rippleBackground.setRippleColor(Color.parseColor(getString(C0032R.color.colorDisconnected)));
+            this.rippleBackground.startRippleAnimation();
+        }
+        update();
+    }
+
+    /* access modifiers changed from: protected */
+    @Override
+    public void onDestroy() {
+        doUnbind();
+        super.onDestroy();
+    }
+
+    /* access modifiers changed from: package-private */
+    public void parseServer() {
+        JSONObject jSONObject;
+        try {
+            new JSONObject(this.f278db.getData());
+            JSONArray jSONArray = jSONObject.getJSONArray("Servers");
+            for (int i = 0; i < jSONArray.length(); i++) {
+                boolean add = this.serverList.add(jSONArray.getJSONObject(i).getString("Name"));
+            }
+        } catch (JSONException e) {
+            JSONException jSONException = e;
+        }
+    }
+
+    /* access modifiers changed from: package-private */
+    public void parseTweak() {
+        JSONObject jSONObject;
+        try {
+            new JSONObject(this.f278db.getData());
+            JSONArray jSONArray = jSONObject.getJSONArray("Tweaks");
+            boolean add = this.tweakList.add("Direct");
+            for (int i = 0; i < jSONArray.length(); i++) {
+                boolean add2 = this.tweakList.add(jSONArray.getJSONObject(i).getString("Name"));
+            }
+        } catch (JSONException e) {
+            JSONException jSONException = e;
+        }
+    }
+
+    /* access modifiers changed from: package-private */
+    public void refresh() {
+        this.serverList.clear();
+        parseServer();
+        this.serverAdapt.notifyDataSetChanged();
+        this.tweakList.clear();
+        parseTweak();
+        this.tweakAdapt.notifyDataSetChanged();
+    }
+
+    /* access modifiers changed from: package-private */
+    public void update() {
+        UpdateCore updateCore;
+        UpdateCore.Listener listener;
+        new UpdateCore.Listener(this) {
+            private final MainActivity this$0;
+
+            {
+                this.this$0 = r6;
+            }
+
+            static MainActivity access$0(AnonymousClass100000017 r4) {
+                return r4.this$0;
+            }
+
+            @Override
+            public void onCancelled() {
+            }
+
+            @Override
+            public void onException(String str) {
+            }
+
+            @Override
+            public void onLoading() {
+            }
+
+            @Override
+            public void onCompleted(String str) {
+                JSONObject jSONObject;
+                AlertDialog.Builder builder;
+                StringBuffer stringBuffer;
+                DialogInterface.OnClickListener onClickListener;
+                String str2 = str;
+                try {
+                    new JSONObject(MilitaryGradeEncrypt.decryptBase64StringToString(str2, Constraints.confpass));
+                    JSONObject jSONObject2 = jSONObject;
+                    if (Double.valueOf(jSONObject2.getString("Version")).doubleValue() > Double.valueOf(this.this$0.conts.getConfigVersion()).doubleValue()) {
+                        new AlertDialog.Builder(this.this$0);
+                        AlertDialog.Builder title = builder.setTitle((CharSequence) "NEW UPDATE!");
+                        new StringBuffer();
+                        new DialogInterface.OnClickListener(this, str2, jSONObject2) {
+                            private final AnonymousClass100000017 this$0;
+                            private final String val$config;
+                            private final JSONObject val$obj;
+
+                            {
+                                this.this$0 = r8;
+                                this.val$config = r9;
+                                this.val$obj = r10;
+                            }
+
+                            static AnonymousClass100000017 access$0(AnonymousClass100000016 r4) {
+                                return r4.this$0;
+                            }
+
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                DialogInterface dialogInterface2 = dialogInterface;
+                                int i2 = i;
+                                try {
+                                    boolean updateData = AnonymousClass100000017.access$0(this.this$0).f278db.updateData("1", this.val$config);
+                                    boolean commit = AnonymousClass100000017.access$0(this.this$0).f279sp.edit().putString("CurrentConfigVersion", this.val$obj.getString("Version")).commit();
+                                    AnonymousClass100000017.access$0(this.this$0).refresh();
+                                } catch (JSONException e) {
+                                    JSONException jSONException = e;
+                                }
+                            }
+                        };
+                        title.setMessage((CharSequence) stringBuffer.append("New updates and announcements!\n \n  What s new? \n").append(jSONObject2.getString("Message")).toString()).setPositiveButton((CharSequence) "OK", onClickListener).setNegativeButton((CharSequence) "CANCEL", (DialogInterface.OnClickListener) null).create().show();
+                    }
+                } catch (Exception e) {
+                    Exception exc = e;
+                }
+            }
+        };
+        new UpdateCore(this, Constraints.updater, listener);
+        AsyncTask execute = updateCore.execute(new String[0]);
+    }
+
+    public MainActivity() {
+        ArrayList<String> arrayList;
+        ArrayList<String> arrayList2;
+        new ArrayList<>();
+        this.serverList = arrayList;
+        new ArrayList<>();
+        this.tweakList = arrayList2;
+    }
+}
